@@ -2,12 +2,12 @@
 
 These are my configuration files for [Neovim](https://neovim.io/).
 
-Currently this repo is empty because I am just starting to play around with it.
-
 
 ## File location
 
 Windows settings location: `~/AppData/Local/nvim/init.vim`
+
+To create a link to a folder in another location:
 
 ```
 mklink /D %userprofile%\AppData\Local\nvim %userprofile%\Documents\GitHub\my_neovim_settings
