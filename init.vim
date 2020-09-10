@@ -1,11 +1,37 @@
 " - Copy to clipboard: `"+y`
 " - Paste from clipboard: `"+p`
 " - Reload init.vim (if editing): `:so %`
+"
+" - Get current file type: `:set filetype?`
+"   From https://stackoverflow.com/questions/2779379/find-what-filetype-is-loaded-in-vim
 
 " colorscheme slate 
 
 " Use space as the mapleader character.
 let mapleader=" "
+
+" Hide banner in file browser.
+let g:netrw_banner=0
+
+" Ignore case when sorting files.
+let g:netrw_sort_options='i'
+
+" Interface settings
+" ==================
+
+" 0 = show on horizontal split.
+" 1 = show if 2+ windows.
+" 2 = always show.
+set laststatus=0
+
+set title
+
+" File-type settings
+" ==================
+
+" From https://stackoverflow.com/questions/26962999/wrong-indentation-when-editing-yaml-in-vim
+" And https://stackoverflow.com/questions/1878974/redefine-tab-as-4-spaces
+autocmd FileType yaml setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 
 " Normal-mode key-mappings
 " ========================
