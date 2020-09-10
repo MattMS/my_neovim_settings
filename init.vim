@@ -73,6 +73,8 @@ nnoremap <Leader>n :bnext<CR>
 " Same as `:bp`.
 nnoremap <Leader>p :bprevious<CR>
 
+nnoremap <Leader>t :echo strftime('%FT%T%z')<CR>
+
 " Control window splits with `Space w` instead of `Ctrl+w`
 nnoremap <Leader>w <C-W>
 
