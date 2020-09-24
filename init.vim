@@ -54,6 +54,13 @@ nnoremap <silent> <C-Q> :quitall<CR>
 " Leader key-mappings
 " -------------------
 
+" Stop highlighting matching text from the last search.
+" http://www.bestofvim.com/tip/switch-off-current-search/
+nnoremap <silent> <Leader>/ :nohlsearch<CR>
+
+" [Set working directory to the current file](http://vim.wikia.com/wiki/Set_working_directory_to_the_current_file)
+nnoremap <Leader>C :cd %:p:h<CR>
+
 " Delete the current buffer.
 " Same as `:bd`.
 nnoremap <Leader>d :bdelete<CR>
