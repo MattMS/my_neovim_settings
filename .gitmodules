@@ -1,3 +1,9 @@
 [submodule "pack/tpope/start/surround"]
 	path = pack/tpope/start/surround
 	url = https://github.com/tpope/vim-surround.git
+[submodule "pack/tpope/start/repeat"]
+	path = pack/tpope/start/repeat
+	url = https://github.com/tpope/vim-repeat.git
+[submodule "pack/tpope/start/speed-dating"]
+	path = pack/tpope/start/speed-dating
+	url = https://github.com/tpope/vim-speeddating.git
