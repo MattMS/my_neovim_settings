@@ -7,3 +7,6 @@
 [submodule "pack/tpope/start/speed-dating"]
 	path = pack/tpope/start/speed-dating
 	url = https://github.com/tpope/vim-speeddating.git
+[submodule "pack/justinmk/start/sneak"]
+	path = pack/justinmk/start/sneak
+	url = https://github.com/justinmk/vim-sneak.git
