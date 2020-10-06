@@ -64,6 +64,12 @@ nnoremap <Return> o<ESC>
 " Add a new line before the current one.
 nnoremap <S-Return> O<ESC>j
 
+" Split line.
+nnoremap K i<CR><Esc>
+
+" `S` and `s` around bound to Sneak.
+" Normally `s` would be "substitute", behaving like `cl`.
+
 " Ctrl key-mappings
 " -----------------
 
