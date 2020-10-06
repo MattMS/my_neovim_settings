@@ -82,7 +82,7 @@ nnoremap <Leader>p :bprevious<CR>
 
 " Show current local time.
 " From https://vim.fandom.com/wiki/Insert_current_date_or_time
-nnoremap <Leader>t :echo strftime('%FT%T%z')<CR>
+nnoremap <Leader>t :echo strftime('%F %T %z')<CR>
 
 " Control window splits with `Space w` instead of `Ctrl+w`
 nnoremap <Leader>w <C-W>
