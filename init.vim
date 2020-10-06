@@ -29,6 +29,28 @@ set title
 " File-type settings
 " ==================
 
+" F#
+" --
+
+autocmd BufNewFile,BufRead *.fs,*.fsi,*.fsx set filetype=fsharp
+autocmd BufNewFile,BufRead *.fsproj set filetype=fsharp_project
+
+autocmd FileType fsharp setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
+
+" Markdown
+" --------
+
+autocmd FileType markdown setlocal tabstop=4
+
+" Quickfix
+" --------
+
+" From https://stackoverflow.com/questions/11983282/vim-how-to-map-command-according-to-buffer-type
+autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
+
+" Yaml
+" ----
+
 " From https://stackoverflow.com/questions/26962999/wrong-indentation-when-editing-yaml-in-vim
 " And https://stackoverflow.com/questions/1878974/redefine-tab-as-4-spaces
 autocmd FileType yaml setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
