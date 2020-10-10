@@ -67,8 +67,13 @@ nnoremap <S-Return> O<ESC>j
 " Split line.
 nnoremap K i<CR><Esc>
 
-" `S` and `s` around bound to Sneak.
+" `S` and `s` are bound to Sneak, after adding the plugin.
 " Normally `s` would be "substitute", behaving like `cl`.
+" This resets the binding for `s` and adds Alt+s and Alt+S for Vim Sneak.
+" Reverse sneak with `S` is still possible.
+nnoremap s cl
+nmap <M-S> <Plug>Sneak_S
+nmap <M-s> <Plug>Sneak_s
 
 " Ctrl key-mappings
 " -----------------
