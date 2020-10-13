@@ -1,11 +1,15 @@
 " - Copy to clipboard: `"+y`
 " - Paste from clipboard: `"+p`
 " - Reload init.vim (if editing): `:so %`
-"
-" - Get current file type: `:set filetype?`
-"   From https://stackoverflow.com/questions/2779379/find-what-filetype-is-loaded-in-vim
 
 " colorscheme slate 
+
+" Variables
+" =========
+"
+" - View Variable: `:echo g:mapleader`
+"
+" https://stackoverflow.com/questions/9193066/how-do-i-inspect-vim-variables
 
 " Use space as the mapleader character.
 let mapleader=" "
@@ -16,18 +20,39 @@ let g:netrw_banner=0
 " Ignore case when sorting files.
 let g:netrw_sort_options='i'
 
-" Interface settings
-" ==================
+" Sneak
+" -----
+"
+" - https://github.com/justinmk/vim-sneak
+" - https://github.com/justinmk/vim-sneak/blob/master/doc/sneak.txt
+
+" 0 is always case-insensitive.
+" 1 follows `ignorecase` and `smartcase`.
+let g:sneak#use_ic_scs=1
+
+" Options
+" =======
+"
+" - Help: `:help options`
+" - Access Set by Let: `let-option` `let-&`
+" - View Option: `:set laststatus?`
 
 " 0 = show on horizontal split.
 " 1 = show if 2+ windows.
 " 2 = always show.
 set laststatus=0
 
+set ignorecase
+
+set smartcase
+
 set title
 
 " File-type settings
 " ==================
+"
+" - Get current file type: `:set filetype?`
+"   From https://stackoverflow.com/questions/2779379/find-what-filetype-is-loaded-in-vim
 
 " F#
 " --
@@ -72,7 +97,7 @@ nnoremap K i<CR><Esc>
 " This resets the binding for `s` and adds Alt+s and Alt+S for Vim Sneak.
 " Reverse sneak with `S` is still possible.
 nnoremap s cl
-nmap <M-S> <Plug>Sneak_S
+nmap S <Plug>Sneak_S
 nmap <M-s> <Plug>Sneak_s
 
 " Ctrl key-mappings
