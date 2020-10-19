@@ -44,6 +44,8 @@ set laststatus=0
 
 set ignorecase
 
+set noruler
+
 set smartcase
 
 set title
