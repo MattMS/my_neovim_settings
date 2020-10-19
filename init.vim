@@ -148,6 +148,8 @@ nnoremap <Leader>w <C-W>
 " Insert-mode key-mappings
 " ========================
 
+inoremap <C-S> <Esc>:write<CR>
+
 " Ctrl-V pastes from clipboard
 " TODO: Fix issues with smart-comments.
 inoremap <C-V> <C-R>*
