@@ -86,6 +86,8 @@ autocmd FileType yaml setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 " Normal-mode key-mappings
 " ========================
 
+nmap <C-/> <Plug>CommentaryLine
+
 " Add a new line after the current one.
 nnoremap <Return> o<ESC>
 
@@ -159,6 +161,8 @@ inoremap <C-V> <C-R>*
 
 " Visual-mode key-mappings
 " ========================
+
+vmap <C-/> <Plug>Commentary
 
 " Cannot replace <C-C> with `"+y` since it always cancels the current mode.
 " vnoremap <C-C> "+y
