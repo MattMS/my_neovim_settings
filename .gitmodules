@@ -10,3 +10,6 @@
 [submodule "pack/justinmk/start/sneak"]
 	path = pack/justinmk/start/sneak
 	url = https://github.com/justinmk/vim-sneak.git
+[submodule "pack/tpope/start/commentary"]
+	path = pack/tpope/start/commentary
+	url = https://github.com/tpope/vim-commentary.git
