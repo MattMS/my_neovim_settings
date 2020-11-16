@@ -62,6 +62,7 @@ set title
 autocmd BufNewFile,BufRead *.fs,*.fsi,*.fsx set filetype=fsharp
 autocmd BufNewFile,BufRead *.fsproj set filetype=fsharp_project
 
+autocmd FileType fsharp setlocal commentstring=//%s
 autocmd FileType fsharp setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 
 " Markdown
