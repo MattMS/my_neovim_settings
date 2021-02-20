@@ -135,6 +135,9 @@ nnoremap <Leader>e :Explore<CR>
 " Same as `:rnu`.
 nnoremap <Leader>i :set relativenumber!<CR>
 
+" Show last-modified time for current file.
+nnoremap <Leader>m :echo strftime('%F %T %z', getftime(@%))<CR>
+
 " Change to next buffer.
 " Same as `:bn`.
 nnoremap <Leader>n :bnext<CR>
