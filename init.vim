@@ -1,6 +1,14 @@
 " - Copy to clipboard: `"+y`
 " - Paste from clipboard: `"+p`
+" - View registers: `:reg`
 " - Reload init.vim (if editing): `:so %`
+"
+" ## [How to debug a mapping? @ Vi Stack Exchange](https://vi.stackexchange.com/questions/7722/how-to-debug-a-mapping)
+"
+" - Comment must never follow a mapping, put on line above.
+" - Always use `nore` mappings, unless you are certain.
+" - Use `<bar>` instead of `|`.
+" - Ctrl+letter is equivalent to Ctrl+Shift+letter.
 
 " colorscheme slate 
 
