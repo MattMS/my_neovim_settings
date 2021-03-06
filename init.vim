@@ -176,5 +176,4 @@ inoremap <C-V> <C-R>*
 vmap <C-/> <Plug>Commentary
 
 " Cannot replace <C-C> with `"+y` since it always cancels the current mode.
-" vnoremap <C-C> "+y
-
+vmap <S-y> "+y
