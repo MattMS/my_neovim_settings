@@ -64,6 +64,8 @@ set title
 " - Get current file type: `:set filetype?`
 "   From https://stackoverflow.com/questions/2779379/find-what-filetype-is-loaded-in-vim
 
+autocmd BufNewFile,BufRead *.dtf set filetype=dtf
+
 " F#
 " --
 
