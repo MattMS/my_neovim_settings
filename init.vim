@@ -96,6 +96,11 @@ autocmd FileType yaml setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 " Normal-mode key-mappings
 " ========================
 
+nnoremap <Down> <C-w>j
+nnoremap <Left> <C-w>h
+nnoremap <Right> <C-w>l
+nnoremap <Up> <C-w>k
+
 nmap <C-/> <Plug>CommentaryLine
 
 " Add a new line after the current one.
