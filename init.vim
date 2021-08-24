@@ -52,6 +52,8 @@ set laststatus=0
 
 set ignorecase
 
+set mouse=a
+
 set noruler
 
 set smartcase
