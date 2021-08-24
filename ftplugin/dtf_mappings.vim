@@ -3,6 +3,8 @@
 inoremap " ""<left>
 inoremap ( (<cr>)<up><end><cr><tab>
 
+inoremap <M-c> ```<cr>```<up><end><cr>
+
 inoremap <M-n> note<space><lt><lt>END<cr>END<up><end><cr>
 
 " Normal mode
