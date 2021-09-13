@@ -13,3 +13,6 @@
 [submodule "pack/tpope/start/commentary"]
 	path = pack/tpope/start/commentary
 	url = https://github.com/tpope/vim-commentary.git
+[submodule "pack/neovim/opt/lspconfig"]
+	path = pack/neovim/opt/lspconfig
+	url = https://github.com/neovim/nvim-lspconfig.git
