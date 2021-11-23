@@ -98,10 +98,17 @@ autocmd FileType yaml setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 " Normal-mode key-mappings
 " ========================
 
-nnoremap <Down> <C-w>j
-nnoremap <Left> <C-w>h
-nnoremap <Right> <C-w>l
-nnoremap <Up> <C-w>k
+" Use arrow keys for window navigation:
+" nnoremap <Down> <C-w>j
+" nnoremap <Left> <C-w>h
+" nnoremap <Right> <C-w>l
+" nnoremap <Up> <C-w>k
+
+" Use arrow keys for buffer navigation:
+nnoremap <Down> <C-e>
+nnoremap <Left> <C-b>
+nnoremap <Right> <C-f>
+nnoremap <Up> <C-y>
 
 nmap <C-/> <Plug>CommentaryLine
 
