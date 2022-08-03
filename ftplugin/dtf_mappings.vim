@@ -1,11 +1,13 @@
 " Insert mode
 
+inoremap <tab> <esc>:s/^\(\s\+\)\([^ ]\+\) "\(.*\)"$/\1\2 <<END\r\1\3\r\1END/<cr>:nohlsearch<cr><up>A
+
 inoremap " ""<left>
 inoremap ( (<cr>)<up><end><cr><tab>
 
-inoremap <M-c> ```<cr>```<up><end><cr>
+inoremap <M-a> act<space>
 
-inoremap <tab> <esc>:s/^\(\s\+\)\([^ ]\+\) "\(.*\)"$/\1\2 <<END\r\1\3\r\1END/<cr>:nohlsearch<cr><up>A
+inoremap <M-c> ```<cr>```<up><end><cr>
 
 " inoremap <M-n> note<space><lt><lt>END<cr>END<up><end><cr>
 inoremap <M-n> note<space>""<left>
