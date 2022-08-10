@@ -16,3 +16,6 @@
 [submodule "pack/neovim/opt/lspconfig"]
 	path = pack/neovim/opt/lspconfig
 	url = https://github.com/neovim/nvim-lspconfig.git
+[submodule "pack/vijaymarupudi/start/fzf"]
+	path = pack/vijaymarupudi/start/fzf
+	url = https://github.com/vijaymarupudi/nvim-fzf.git
