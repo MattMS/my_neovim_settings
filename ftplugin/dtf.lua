@@ -163,9 +163,10 @@ local function insert_snippet (with_block, default)
 				if result then
 					if with_block then
 						local lines = {'(', ')'}
-						add_lines_above(prepend_on_all(indent, lines))
-						move_up()
+						add_lines_below(prepend_on_all(indent, lines))
 						indent = indent .. '\t'
+						move_down()
+						move_down()
 					end
 					add_lines_above(indent .. snippet_values[result[1]])
 					move_up()
