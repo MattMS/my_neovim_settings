@@ -3,6 +3,10 @@ local fzf = require("fzf")
 -- Helpers
 -- =======
 
+local function prepend_on_all (suffix, lines)
+	return vim.fn.map(lines, '"' .. suffix .. '" .. v:val')
+end
+
 -- Current line
 -- ------------
 
@@ -20,6 +24,10 @@ local function current_line_match (pattern)
 	else
 		return ""
 	end
+end
+
+local function current_line_indent ()
+	return current_line_match("^\\s\\+")
 end
 
 -- Return true if the current line matches the given pattern.
@@ -51,15 +59,23 @@ end
 -- -----------
 
 local function move_down ()
-	vim.cmd(string.format("call cursor(%d, 0)", current_line_number() + 1))
+	vim.cmd("call cursor(line('.') + 1, 0)")
+end
+
+local function move_left ()
+	vim.cmd("call cursor(0, col('.') - 1)")
+end
+
+local function move_right ()
+	vim.cmd("call cursor(0, col('.') + 1)")
 end
 
 local function move_to_end_of_line ()
-	vim.cmd(string.format("call cursor(0, %d)", current_line_size() + 1))
+	vim.cmd("call cursor(0, col('$'))")
 end
 
 local function move_up ()
-	vim.cmd(string.format("call cursor(%d, 0)", current_line_number() - 1))
+	vim.cmd("call cursor(line('.') - 1, 0)")
 end
 
 -- Editing
@@ -68,15 +84,15 @@ end
 -- Insert
 -- ------
 
--- Adds the given text below the current line.
+-- Adds the given text above the current line.
 local function add_lines_above (text)
-	-- Using `current_line_number()` will fail when it is in a different window (like fzf)
-	vim.fn.append(vim.fn.line('.'), text)
+	vim.fn.append(vim.fn.line('.') - 1, text)
 end
 
--- Adds the given text above the current line.
+-- Adds the given text below the current line.
 local function add_lines_below (text)
-	vim.fn.append(vim.fn.line('.') - 1, text)
+	-- Using `current_line_number()` will fail when it is in a different window (like fzf)
+	vim.fn.append(vim.fn.line('.'), text)
 end
 
 -- Data
@@ -124,7 +140,7 @@ local function fix_time (default)
 	end
 end
 
-local function insert_snippet (default)
+local function insert_snippet (with_block, default)
 	return function ()
 		if default and current_line_matches("^\\s*$") then
 			default()
@@ -145,11 +161,40 @@ local function insert_snippet (default)
 					end
 				})
 				if result then
-					add_lines_below(indent .. snippet_values[result[1]])
+					if with_block then
+						local lines = {'(', ')'}
+						add_lines_above(prepend_on_all(indent, lines))
+						move_up()
+						indent = indent .. '\t'
+					end
+					add_lines_above(indent .. snippet_values[result[1]])
+					move_up()
+					move_to_end_of_line()
+					move_left()
 				end
 			end)()
 		end
 	end
+end
+
+-- Original Vimscript: inoremap <M-s> start <C-R>=strftime("%H%M")<cr><cr>stop <C-R>=strftime("%H%M")<cr><up><end><esc>
+-- Time was from https://vim.fandom.com/wiki/Insert_current_date_or_time
+local function insert_time_block ()
+	local indent = current_line_indent()
+	local time = vim.fn.strftime("%H%M")
+	local lines = {'(', '\tstart ' .. time, '\tstop ' .. time, ')'}
+	add_lines_below(prepend_on_all(indent, lines))
+	move_down()
+	move_down()
+	move_to_end_of_line()
+end
+
+local function insert_writing_time_block ()
+	insert_time_block()
+
+	local indent = current_line_indent()
+	local lines = {'act writing', 'my times'}
+	add_lines_above(prepend_on_all(indent, lines))
 end
 
 -- Key bindings
@@ -172,4 +217,10 @@ end
 -- vim.keymap.set("i", "<cr>", expand_quote(default_insert_cr), {buffer = true})
 vim.keymap.set("i", "<tab>", expand_quote(default_insert_tab), {buffer = true})
 
-vim.keymap.set("n", "<m-a>", insert_snippet(), {buffer = true})
+vim.keymap.set("n", "<m-a>", insert_snippet(false), {buffer = true})
+vim.keymap.set("n", "<m-s-a>", insert_snippet(true), {buffer = true})
+vim.keymap.set("n", "<m-s>", insert_time_block, {buffer = true})
+vim.keymap.set("n", "<m-w>", insert_writing_time_block, {buffer = true})
+
+-- vim.keymap.set("n", "<c-.>", fix_time(), {buffer = true}) -- Replace the time at the cursor with the current time.
+-- vim.keymap.set("n", "<c-s-.>", set_to_last_time(), {buffer = true}) -- Find the last time (before the current line) and replace the time at the cursor with that.
