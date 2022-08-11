@@ -1,10 +1,22 @@
 local fzf = require("fzf")
 
+local ABOVE = -1
+local BELOW = 1
+
+local WITH_BLOCK = true
+local WITHOUT_BLOCK = false
+
 -- Helpers
 -- =======
 
 local function prepend_on_all (suffix, lines)
 	return vim.fn.map(lines, '"' .. suffix .. '" .. v:val')
+end
+
+-- Inspiration: https://docs.microsoft.com/en-au/dotnet/api/system.string.split?view=net-6.0
+local function string_split (sep)
+	return function (text)
+	end
 end
 
 -- Current line
@@ -70,6 +82,9 @@ local function move_right ()
 	vim.cmd("call cursor(0, col('.') + 1)")
 end
 
+-- This behaves differently in Insert and Normal mode.
+-- Insert-mode (like `A`) is `col($)`.
+-- Normal-mode (like `$`) is `col($) - 1`.
 local function move_to_end_of_line ()
 	vim.cmd("call cursor(0, col('$'))")
 end
@@ -86,7 +101,8 @@ end
 
 -- Adds the given text above the current line.
 local function add_lines_above (text)
-	vim.fn.append(vim.fn.line('.') - 1, text)
+	-- Uses `v` instead of `.` so it works in Visual and other modes.
+	vim.fn.append(vim.fn.line('v') - 1, text)
 end
 
 -- Adds the given text below the current line.
@@ -115,8 +131,12 @@ local function add_new_line ()
 	add_lines_above("")
 end
 
--- Vimscript: inoremap <tab> <esc>:s/^\(\s\+\)\([^ ]\+\) "\(.*\)"$/\1\2 <<END\r\1\3\r\1END/<cr>:nohlsearch<cr><up>A
-local function expand_quote (default)
+-- In `note ""`, it should expand to `note <<END\nEND`.
+-- In `()`, it should expand to `(\n\t\n)`
+--
+-- Original Vimscript: inoremap <tab> <esc>:s/^\(\s\+\)\([^ ]\+\) "\(.*\)"$/\1\2 <<END\r\1\3\r\1END/<cr>:nohlsearch<cr><up>A
+--
+local function expand_line (default)
 	return function ()
 		if current_line_matches("^\\s*[^ ]\\+ \".*\"$") then
 			vim.cmd('s/^\\(\\s*\\)\\([^ ]\\+\\) "\\(.*\\)"$/\\1\\2 <<END\\r\\1\\3\\r\\1END/')
@@ -171,7 +191,7 @@ local function insert_snippet (with_block, default)
 					add_lines_above(indent .. snippet_values[result[1]])
 					move_up()
 					move_to_end_of_line()
-					move_left()
+					move_left() -- Need to do this or the cursor is beyond the end.
 				end
 			end)()
 		end
@@ -190,12 +210,21 @@ local function insert_time_block ()
 	move_to_end_of_line()
 end
 
+-- Original Vimscript: imap <M-w> (act writing<cr>my times<cr><M-s><esc>
+-- This made use of my `insert_time_block` code with `<m-s>`.
 local function insert_writing_time_block ()
 	insert_time_block()
 
 	local indent = current_line_indent()
-	local lines = {'act writing', 'my times'}
+	local lines = {'act write', 'my times'}
 	add_lines_above(prepend_on_all(indent, lines))
+end
+
+local function wrap_selection_in_block ()
+	local indent = current_line_indent()
+	add_lines_above(indent .. '(')
+	add_lines_below(indent .. ')')
+	vim.cmd("normal ojo>>")
 end
 
 -- Key bindings
@@ -215,13 +244,19 @@ local function default_insert_tab ()
 	-- TODO: Insert another tab.
 end
 
--- vim.keymap.set("i", "<cr>", expand_quote(default_insert_cr), {buffer = true})
-vim.keymap.set("i", "<tab>", expand_quote(default_insert_tab), {buffer = true})
+-- vim.keymap.set("i", "<cr>", expand_line(default_insert_cr), {buffer = true})
+vim.keymap.set("i", "<tab>", expand_line(default_insert_tab), {buffer = true})
 
-vim.keymap.set("n", "<m-a>", insert_snippet(false), {buffer = true})
-vim.keymap.set("n", "<m-s-a>", insert_snippet(true), {buffer = true})
+-- vim.keymap.set("n", "<tab>", fix_line, {buffer = true})
+vim.keymap.set("n", "<m-a>", insert_snippet(WITHOUT_BLOCK), {buffer = true})
+vim.keymap.set("n", "<m-s-a>", insert_snippet(WITH_BLOCK), {buffer = true})
+-- vim.keymap.set("n", "<m-n>", insert_note(BELOW), {buffer = true})
+-- vim.keymap.set("n", "<m-s-n>", insert_note(ABOVE), {buffer = true})
 vim.keymap.set("n", "<m-s>", insert_time_block, {buffer = true})
 vim.keymap.set("n", "<m-w>", insert_writing_time_block, {buffer = true})
+-- vim.keymap.set("n", "<m-x>", pick_command_with_fzf, {buffer = true})
 
 -- vim.keymap.set("n", "<c-.>", fix_time(), {buffer = true}) -- Replace the time at the cursor with the current time.
 -- vim.keymap.set("n", "<c-s-.>", set_to_last_time(), {buffer = true}) -- Find the last time (before the current line) and replace the time at the cursor with that.
+
+vim.keymap.set("v", "<tab>", wrap_selection_in_block, {buffer = true})
