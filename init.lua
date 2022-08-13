@@ -198,8 +198,6 @@ bind_normal_leader("e", cmd("Explore"))
 -- Same as `:rnu`.
 bind_normal_leader("i", cmd("set relativenumber!"))
 
-bind_normal_leader("l", switch_buffer)
-
 -- Show last-modified time for current file.
 bind_normal_leader("m", cmd("echo strftime('%F %T %z', getftime(@%))"))
 
@@ -210,6 +208,8 @@ bind_normal_leader("n", cmd("bnext"))
 -- Change to previous buffer.
 -- Same as `:bp`.
 bind_normal_leader("p", cmd("bprevious"))
+
+bind_normal_leader("s", switch_buffer)
 
 -- Show current local time.
 -- From https://vim.fandom.com/wiki/Insert_current_date_or_time
