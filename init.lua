@@ -119,17 +119,33 @@ local function bind_normal_arrows_hjkl (h, j, k, l)
 	bind_normal("<up>", k)
 end
 
--- Use arrow keys for window navigation.
-local function bind_normal_arrows_to_win_nav ()
-	bind_normal_arrows_hjkl("<c-w>h", "<c-w>j", "<c-w>k", "<c-w>l")
+local function bind_normal_ctrl_arrows_hjkl (h, j, k, l)
+	bind_normal("<c-down>", j)
+	bind_normal("<c-left>", h)
+	bind_normal("<c-right>", l)
+	bind_normal("<c-up>", k)
+end
+
+local function bind_normal_shift_arrows_hjkl (h, j, k, l)
+	bind_normal("<s-down>", j)
+	bind_normal("<s-left>", h)
+	bind_normal("<s-right>", l)
+	bind_normal("<s-up>", k)
 end
 
 -- Use arrow keys for buffer navigation.
-local function bind_normal_arrows_to_buf_nav ()
-	bind_normal_arrows_hjkl("<c-b>", "<c-e>", "<c-y>", "<c-f>")
+local function bind_buf_nav (bind_hjkl)
+	bind_hjkl("<c-b>", "<c-e>", "<c-y>", "<c-f>")
 end
 
-bind_normal_arrows_to_buf_nav()
+-- Use arrow keys for window navigation.
+local function bind_win_nav (bind_hjkl)
+	bind_hjkl("<c-w>h", "<c-w>j", "<c-w>k", "<c-w>l")
+end
+
+bind_buf_nav(bind_normal_arrows_hjkl)
+bind_win_nav(bind_normal_shift_arrows_hjkl)
+-- TODO: Ctrl+Arrows to create splits.
 
 -- Arrow
 -- -----
