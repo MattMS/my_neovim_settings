@@ -136,20 +136,31 @@ end
 
 -- Original Vimscript: inoremap <M-s> start <C-R>=strftime("%H%M")<cr><cr>stop <C-R>=strftime("%H%M")<cr><up><end><esc>
 -- Time was from https://vim.fandom.com/wiki/Insert_current_date_or_time
-local function insert_time_block ()
-	local indent = current.line.indent()
-	local time = vim.fn.strftime("%H%M")
-	local lines = {'(', '\tstart ' .. time, '\tstop ' .. time, ')'}
-	add.lines.below(add.prefix(indent, lines))
-	move.down()
-	move.down()
-	move.to.end_of_line()
+local function insert_time_block (with_block)
+	return function ()
+		local indent = current.line.indent()
+		local time = vim.fn.strftime("%H%M")
+		local lines = {}
+		if with_block then
+			lines = {'(', '\tstart ' .. time, '\tstop ' .. time, ')'}
+		else
+			lines = {'start ' .. time, 'stop ' .. time}
+		end
+		add.lines.below(add.prefix(indent, lines))
+		if with_block then
+			move.down()
+			move.down()
+		else
+			vim.cmd("normal J")
+		end
+		move.to.end_of_line()
+	end
 end
 
 -- Original Vimscript: imap <M-w> (act writing<cr>my times<cr><M-s><esc>
 -- This made use of my `insert_time_block` code with `<m-s>`.
 local function insert_writing_time_block ()
-	insert_time_block()
+	insert_time_block(WITH_BLOCK)()
 
 	local indent = current.line.indent()
 	local lines = {'act write', 'my times'}
@@ -160,6 +171,7 @@ local function wrap_selection_in_block ()
 	local indent = current.line.indent()
 	add.lines.above(indent .. '(')
 	add.lines.below(indent .. ')')
+	-- `o` in visual mode will switch to the other end of the selection.
 	vim.cmd("normal ojo>>")
 end
 
@@ -168,6 +180,7 @@ end
 
 -- keymap.buffer.insert("<cr>", expand_line(keymap.default.insert.cr))
 keymap.buffer.insert("<tab>", expand_line(keymap.default.insert.tab))
+keymap.buffer.insert("<m-s>", insert_time_block(WITHOUT_BLOCK))
 
 keymap.buffer.normal("<tab>", fix_line)
 keymap.buffer.normal("<m-a>", insert_snippet(WITHOUT_BLOCK))
@@ -175,7 +188,7 @@ keymap.buffer.normal("<m-s-a>", insert_snippet(WITH_BLOCK))
 -- keymap.buffer.normal("<m-j>", insert_tag(WITHOUT_BLOCK))
 -- keymap.buffer.normal("<m-n>", insert_note(BELOW))
 -- keymap.buffer.normal("<m-s-n>", insert_note(ABOVE))
-keymap.buffer.normal("<m-s>", insert_time_block)
+keymap.buffer.normal("<m-s>", insert_time_block(WITH_BLOCK))
 keymap.buffer.normal("<m-w>", insert_writing_time_block)
 -- keymap.buffer.normal("<m-x>", pick_command_with_fzf)
 
