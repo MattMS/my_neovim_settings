@@ -1,4 +1,10 @@
-local fzf = require("fzf")
+local fzf = require "fzf"
+
+-- My modules
+local add = require "add"
+local current = require "current"
+local keymap = require "keymap"
+local move = require "move"
 
 local ABOVE = -1
 local BELOW = 1
@@ -6,12 +12,19 @@ local BELOW = 1
 local WITH_BLOCK = true
 local WITHOUT_BLOCK = false
 
--- Helpers
+-- Options
 -- =======
 
-local function prepend_on_all (suffix, lines)
-	return vim.fn.map(lines, '"' .. suffix .. '" .. v:val')
-end
+-- See https://vim.fandom.com/wiki/Folding
+vim.opt_local.foldmethod = "syntax"
+
+vim.opt_local.expandtab = false
+vim.opt_local.shiftwidth = 4
+vim.opt_local.softtabstop = 4
+vim.opt_local.tabstop = 4
+
+-- Helpers
+-- =======
 
 -- Inspiration: https://docs.microsoft.com/en-au/dotnet/api/system.string.split?view=net-6.0
 local function string_split (sep)
@@ -19,117 +32,33 @@ local function string_split (sep)
 	end
 end
 
--- Current line
--- ------------
-
-local function current_line_column ()
-	return vim.api.nvim_win_get_cursor(0)[2]
-end
-
--- Return the matched content based on the current line, or empty string on no match.
-local function current_line_match (pattern)
-	local line = vim.api.nvim_get_current_line()
-	-- Cannot use `line:match(pattern)`, since Lua pattern matching is different to regex.
-	local start, stop = vim.regex(pattern):match_str(line)
-	if start and stop then
-		return string.sub(line, start, stop)
-	else
-		return ""
-	end
-end
-
-local function current_line_indent ()
-	return current_line_match("^\\s\\+")
-end
-
--- Return true if the current line matches the given pattern.
-local function current_line_matches (pattern)
-	return vim.regex(pattern):match_str(vim.api.nvim_get_current_line()) ~= nil
-end
-
-local function current_line_number ()
-	-- Get line number in Vimscript: `line(".")`
-	return vim.api.nvim_win_get_cursor(0)[1]
-end
-
-local function current_line_size ()
-	-- Get line content in Vimscript: `getline(".")`
-	return #vim.api.nvim_get_current_line()
-end
-
--- Current word
--- ------------
-
-local function current_word_matches (pattern)
-	return current_line_matches(pattern)
-end
-
--- Navigation
--- ==========
-
--- Move cursor
--- -----------
-
-local function move_down ()
-	vim.cmd("call cursor(line('.') + 1, 0)")
-end
-
-local function move_left ()
-	vim.cmd("call cursor(0, col('.') - 1)")
-end
-
-local function move_right ()
-	vim.cmd("call cursor(0, col('.') + 1)")
-end
-
--- This behaves differently in Insert and Normal mode.
--- Insert-mode (like `A`) is `col($)`.
--- Normal-mode (like `$`) is `col($) - 1`.
-local function move_to_end_of_line ()
-	vim.cmd("call cursor(0, col('$'))")
-end
-
-local function move_up ()
-	vim.cmd("call cursor(line('.') - 1, 0)")
-end
-
--- Editing
--- =======
-
--- Insert
--- ------
-
--- Adds the given text above the current line.
-local function add_lines_above (text)
-	-- Uses `v` instead of `.` so it works in Visual and other modes.
-	vim.fn.append(vim.fn.line('v') - 1, text)
-end
-
--- Adds the given text below the current line.
-local function add_lines_below (text)
-	-- Using `current_line_number()` will fail when it is in a different window (like fzf)
-	vim.fn.append(vim.fn.line('.'), text)
+local function substitute (pattern, action)
+	-- Using `\v` to simplify brackets and plus.
+	vim.cmd("s/\\v" .. pattern .. "/" .. action)
+	vim.cmd('nohlsearch')
 end
 
 -- Data
 -- ====
 
-local snippet_keys = {}
-local snippet_values = {}
--- Could also use `vim.env.HOME`
-local lines = vim.fn.readfile(vim.fn.glob("~/act.ini"))
-for i, line in pairs(lines) do
-	local k, v = string.match(line, "^([^=]+)=(.*)$")
-	table.insert(snippet_keys, k)
-	snippet_values[k] = v
+local function read_flat_ini (file_name)
+	local keys = {}
+	local values = {}
+	local lines = vim.fn.readfile(vim.fn.glob(file_name))
+	for i, line in pairs(lines) do
+		local k, v = string.match(line, "^([^=]+)=(.*)$")
+		table.insert(keys, k)
+		values[k] = v
+	end
+	return keys, values
 end
+
+-- Could also use `vim.env.HOME`
+local snippet_keys, snippet_values = read_flat_ini("~/act.ini")
+local tags = read_flat_ini("~/tag.ini")
 
 -- Actions
 -- =======
-
-local function add_new_line ()
-	add_lines_above("")
-end
 
 -- In `note ""`, it should expand to `note <<END\nEND`.
 -- In `()`, it should expand to `(\n\t\n)`
@@ -138,21 +67,28 @@ end
 --
 local function expand_line (default)
 	return function ()
-		if current_line_matches("^\\s*[^ ]\\+ \".*\"$") then
-			vim.cmd('s/^\\(\\s*\\)\\([^ ]\\+\\) "\\(.*\\)"$/\\1\\2 <<END\\r\\1\\3\\r\\1END/')
-			vim.cmd('nohlsearch')
-			move_up()
-			move_to_end_of_line()
+		if current.line.matches [[^\s*[^ ]\+ ".*"$]] then
+			substitute([[^(\s*)([^ ]+) "(.*)"$]], [[\1\2 <<END\r\1\3\r\1END]])
+			move.up()
+			move.to.end_of_line()
 		else
 			default()
 		end
 	end
 end
 
+local function fix_line ()
+	if current.line.matches [[\v^\t+[^ ]+ [^ ]+$]] then
+		substitute([[^(\t+)([^ ]+) (.*)$]], [[\1\2 (\r\1\t\3\r\1)]])
+		move.up()
+		move.to.end_of_line()
+	end
+end
+
 -- If on a number, set it to the current time.
 local function fix_time (default)
 	return function ()
-		if default and (not current_word_matches("\\d{4}")) then
+		if default and (not current.word.matches("\\d{4}")) then
 			default()
 		else
 			-- TODO: Replace word at cursor with current time.
@@ -162,11 +98,11 @@ end
 
 local function insert_snippet (with_block, default)
 	return function ()
-		if default and current_line_matches("^\\s*$") then
+		if default and current.line.matches("^\\s*$") then
 			default()
 		else
 			-- TODO: If "~/act.ini" does not exist, then show a warning explaining how to create the file.
-			local indent = current_line_match("^\\s\\+")
+			local indent = current.line.indent()
 			coroutine.wrap(function ()
 				local result = fzf.fzf(snippet_keys, "--reverse", {
 					border = true,
@@ -183,15 +119,15 @@ local function insert_snippet (with_block, default)
 				if result then
 					if with_block then
 						local lines = {'(', ')'}
-						add_lines_below(prepend_on_all(indent, lines))
+						add.lines.below(add.prefix(indent, lines))
 						indent = indent .. '\t'
-						move_down()
-						move_down()
+						move.down()
+						move.down()
 					end
-					add_lines_above(indent .. snippet_values[result[1]])
-					move_up()
-					move_to_end_of_line()
-					move_left() -- Need to do this or the cursor is beyond the end.
+					add.lines.above(indent .. snippet_values[result[1]])
+					move.up()
+					move.to.end_of_line()
+					move.left() -- Need to do this or the cursor is beyond the end.
 				end
 			end)()
 		end
@@ -201,13 +137,13 @@ end
 -- Original Vimscript: inoremap <M-s> start <C-R>=strftime("%H%M")<cr><cr>stop <C-R>=strftime("%H%M")<cr><up><end><esc>
 -- Time was from https://vim.fandom.com/wiki/Insert_current_date_or_time
 local function insert_time_block ()
-	local indent = current_line_indent()
+	local indent = current.line.indent()
 	local time = vim.fn.strftime("%H%M")
 	local lines = {'(', '\tstart ' .. time, '\tstop ' .. time, ')'}
-	add_lines_below(prepend_on_all(indent, lines))
-	move_down()
-	move_down()
-	move_to_end_of_line()
+	add.lines.below(add.prefix(indent, lines))
+	move.down()
+	move.down()
+	move.to.end_of_line()
 end
 
 -- Original Vimscript: imap <M-w> (act writing<cr>my times<cr><M-s><esc>
@@ -215,48 +151,35 @@ end
 local function insert_writing_time_block ()
 	insert_time_block()
 
-	local indent = current_line_indent()
+	local indent = current.line.indent()
 	local lines = {'act write', 'my times'}
-	add_lines_above(prepend_on_all(indent, lines))
+	add.lines.above(add.prefix(indent, lines))
 end
 
 local function wrap_selection_in_block ()
-	local indent = current_line_indent()
-	add_lines_above(indent .. '(')
-	add_lines_below(indent .. ')')
+	local indent = current.line.indent()
+	add.lines.above(indent .. '(')
+	add.lines.below(indent .. ')')
 	vim.cmd("normal ojo>>")
 end
 
 -- Key bindings
 -- ============
 
-local function default_insert_cr ()
-	-- vim.cmd("normal o")
-	vim.cmd('exe "normal! i\\<cr>"')
+-- keymap.buffer.insert("<cr>", expand_line(keymap.default.insert.cr))
+keymap.buffer.insert("<tab>", expand_line(keymap.default.insert.tab))
 
-	-- add_new_line()
-	-- move_down()
-end
+keymap.buffer.normal("<tab>", fix_line)
+keymap.buffer.normal("<m-a>", insert_snippet(WITHOUT_BLOCK))
+keymap.buffer.normal("<m-s-a>", insert_snippet(WITH_BLOCK))
+-- keymap.buffer.normal("<m-j>", insert_tag(WITHOUT_BLOCK))
+-- keymap.buffer.normal("<m-n>", insert_note(BELOW))
+-- keymap.buffer.normal("<m-s-n>", insert_note(ABOVE))
+keymap.buffer.normal("<m-s>", insert_time_block)
+keymap.buffer.normal("<m-w>", insert_writing_time_block)
+-- keymap.buffer.normal("<m-x>", pick_command_with_fzf)
 
--- Saw that `<tab>` is normally the same as `<c-i>`
-local function default_insert_tab ()
-	-- move_to_end_of_line()
-	-- TODO: Insert another tab.
-end
+-- keymap.buffer.normal("<c-.>", fix_time()) -- Replace the time at the cursor with the current time.
+-- keymap.buffer.normal("<c-s-.>", set_to_last_time()) -- Find the last time (before the current line) and replace the time at the cursor with that.
 
--- vim.keymap.set("i", "<cr>", expand_line(default_insert_cr), {buffer = true})
-vim.keymap.set("i", "<tab>", expand_line(default_insert_tab), {buffer = true})
-
--- vim.keymap.set("n", "<tab>", fix_line, {buffer = true})
-vim.keymap.set("n", "<m-a>", insert_snippet(WITHOUT_BLOCK), {buffer = true})
-vim.keymap.set("n", "<m-s-a>", insert_snippet(WITH_BLOCK), {buffer = true})
--- vim.keymap.set("n", "<m-n>", insert_note(BELOW), {buffer = true})
--- vim.keymap.set("n", "<m-s-n>", insert_note(ABOVE), {buffer = true})
-vim.keymap.set("n", "<m-s>", insert_time_block, {buffer = true})
-vim.keymap.set("n", "<m-w>", insert_writing_time_block, {buffer = true})
--- vim.keymap.set("n", "<m-x>", pick_command_with_fzf, {buffer = true})
-
--- vim.keymap.set("n", "<c-.>", fix_time(), {buffer = true}) -- Replace the time at the cursor with the current time.
--- vim.keymap.set("n", "<c-s-.>", set_to_last_time(), {buffer = true}) -- Find the last time (before the current line) and replace the time at the cursor with that.
-
-vim.keymap.set("v", "<tab>", wrap_selection_in_block, {buffer = true})
+keymap.buffer.visual("<tab>", wrap_selection_in_block)
