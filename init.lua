@@ -1,4 +1,7 @@
+local add = require "add"
 local fzf_pick = require("fzf_pick")
+local keymap = require "keymap"
+local move = require "move"
 
 -- Given a file path, split into the file path and the file name.
 -- Also fix Windows path separators.
@@ -82,22 +85,6 @@ vim.opt.title = true
 -- Normal-mode key-mappings
 -- ========================
 
-local function bind_insert (key, action)
-	vim.keymap.set("i", key, action)
-end
-
-local function bind_normal (key, action)
-	vim.keymap.set("n", key, action)
-end
-
-local function bind_normal_leader (key, action)
-	vim.keymap.set("n", "<leader>" .. key, action)
-end
-
-local function bind_visual (key, action)
-	vim.keymap.set("v", key, action)
-end
-
 local function cmd (action)
 	return ":" .. action .. "<cr>"
 end
@@ -106,24 +93,24 @@ end
 -- -----
 
 local function bind_normal_arrows_hjkl (h, j, k, l)
-	bind_normal("<down>", j)
-	bind_normal("<left>", h)
-	bind_normal("<right>", l)
-	bind_normal("<up>", k)
+	keymap.global.normal("<down>", j)
+	keymap.global.normal("<left>", h)
+	keymap.global.normal("<right>", l)
+	keymap.global.normal("<up>", k)
 end
 
 local function bind_normal_ctrl_arrows_hjkl (h, j, k, l)
-	bind_normal("<c-down>", j)
-	bind_normal("<c-left>", h)
-	bind_normal("<c-right>", l)
-	bind_normal("<c-up>", k)
+	keymap.global.normal("<c-down>", j)
+	keymap.global.normal("<c-left>", h)
+	keymap.global.normal("<c-right>", l)
+	keymap.global.normal("<c-up>", k)
 end
 
 local function bind_normal_shift_arrows_hjkl (h, j, k, l)
-	bind_normal("<s-down>", j)
-	bind_normal("<s-left>", h)
-	bind_normal("<s-right>", l)
-	bind_normal("<s-up>", k)
+	keymap.global.normal("<s-down>", j)
+	keymap.global.normal("<s-left>", h)
+	keymap.global.normal("<s-right>", l)
+	keymap.global.normal("<s-up>", k)
 end
 
 -- Use arrow keys for buffer navigation.
@@ -144,16 +131,21 @@ bind_win_nav(bind_normal_shift_arrows_hjkl)
 -- --------
 
 -- Add a new line after the current one.
--- nnoremap <Return> o<ESC>
-bind_normal("<return>", "o<esc>")
+-- nnoremap <return> o<esc>
+keymap.global.normal("<return>", function ()
+	add.lines.below("")
+	move.down()
+end)
 
 -- Add a new line before the current one.
--- nnoremap <S-Return> O<ESC>j
-bind_normal("<s-return>", "o<esc>j")
+-- nnoremap <s-return> O<esc>j
+keymap.global.normal("<s-return>", function ()
+	add.lines.above("")
+end)
 
 -- Split line.
--- nnoremap K i<CR><Esc>
-bind_normal("<s-k>", "i<cr><esc>")
+-- nnoremap K i<cr><esc>
+keymap.global.normal("<s-k>", "i<cr><esc>")
 
 -- Sneak key-mappings
 -- ------------------
@@ -163,86 +155,87 @@ bind_normal("<s-k>", "i<cr><esc>")
 
 -- This resets the binding for `s`.
 -- nnoremap s cl
-bind_normal("s", "cl")
+keymap.global.normal("s", "cl")
 
 -- nmap S <Plug>Sneak_S
-bind_normal("<s-s>", "<plug>Sneak_S")
+keymap.global.normal("<s-s>", "<plug>Sneak_S")
 
 -- Reverse sneak with `s-s` is still possible.
 -- nmap <m-s> <Plug>Sneak_s
-bind_normal("<m-s>", "<plug>Sneak_s")
+keymap.global.normal("<m-s>", "<plug>Sneak_s")
 
 -- Ctrl key-mappings
 -- -----------------
 
 -- nmap <C-/> <Plug>CommentaryLine
-bind_normal("<c-/>", "<Plug>CommentaryLine")
+keymap.global.normal("<c-/>", "<Plug>CommentaryLine")
 
 -- Ctrl-S to save.
 -- nnoremap <silent> <c-s> :write<cr>
-bind_normal("<c-s>", cmd("write"))
+keymap.global.normal("<c-s>", cmd("write"))
 
 -- Ctrl-Q to quit completely.
 -- nnoremap <silent> <c-q> :quitall<cr>
-bind_normal("<c-q>", cmd("quitall"))
+keymap.global.normal("<c-q>", cmd("quitall"))
 
 -- Leader key-mappings
 -- -------------------
 
 -- Stop highlighting matching text from the last search.
 -- http://www.bestofvim.com/tip/switch-off-current-search/
-bind_normal_leader("/", cmd("nohlsearch"))
+keymap.global.normal_leader("/", cmd("nohlsearch"))
 
 -- [Set working directory to the current file](http://vim.wikia.com/wiki/Set_working_directory_to_the_current_file)
-bind_normal_leader("c", cmd("cd %:p:h"))
+keymap.global.normal_leader("c", cmd("cd %:p:h"))
 
 -- Delete the current buffer.
 -- Same as `:bd`.
-bind_normal_leader("d", cmd("bdelete"))
+keymap.global.normal_leader("d", cmd("bdelete"))
 
 -- View files in folder of current buffer.
-bind_normal_leader("e", cmd("Explore"))
+keymap.global.normal_leader("e", cmd("Explore"))
 
 -- Toggle relative line numbers in gutter.
 -- Same as `:rnu`.
-bind_normal_leader("i", cmd("set relativenumber!"))
+keymap.global.normal_leader("i", cmd("set relativenumber!"))
 
 -- Show last-modified time for current file.
-bind_normal_leader("m", cmd("echo strftime('%F %T %z', getftime(@%))"))
+keymap.global.normal_leader("m", cmd("echo strftime('%F %T %z', getftime(@%))"))
 
 -- Change to next buffer.
 -- Same as `:bn`.
-bind_normal_leader("n", cmd("bnext"))
+keymap.global.normal_leader("n", cmd("bnext"))
 
 -- Change to previous buffer.
 -- Same as `:bp`.
-bind_normal_leader("p", cmd("bprevious"))
+keymap.global.normal_leader("p", cmd("bprevious"))
 
-bind_normal_leader("s", switch_buffer)
+keymap.global.normal_leader("s", switch_buffer)
 
 -- Show current local time.
 -- From https://vim.fandom.com/wiki/Insert_current_date_or_time
-bind_normal_leader("t", cmd("echo strftime('%F %T %z')"))
+keymap.global.normal_leader("t", cmd("echo strftime('%F %T %z')"))
 
 -- Control window splits with `space w` instead of `ctrl+w`
-bind_normal_leader("w", "<c-w>")
+keymap.global.normal_leader("w", "<c-w>")
 
 -- Insert-mode key-mappings
 -- ========================
 
 -- inoremap <c-s> <esc>:write<cr>
-bind_insert("<c-s>", "<esc>:write<cr>")
+keymap.global.insert("<c-s>", "<esc>:write<cr>")
 
- -- Ctrl-V pastes from clipboard
- -- TODO: Fix issues with smart-comments.
-bind_insert("<c-v>", "<c-r>*")
+-- Ctrl-V pastes from clipboard
+-- TODO: Fix issues with smart-comments.
+-- inoremap <c-v> <c-r>*
+keymap.global.insert("<c-v>", "<c-r>*")
 
 -- Visual-mode key-mappings
--- ------------------------
+-- ========================
 
 -- vmap <C-/> <Plug>Commentary
-bind_visual("<c-/>", "<Plug>Commentary")
+keymap.global.visual("<c-/>", "<Plug>Commentary")
 
 -- Cannot replace <C-C> with `"+y` since it always cancels the current mode.
 -- vmap <S-y> "+y
-bind_visual("<s-y>", '"+y')
+keymap.global.visual("<s-y>", '"+y')

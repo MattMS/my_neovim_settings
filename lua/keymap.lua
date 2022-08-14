@@ -1,5 +1,8 @@
 M = {}
 
+-- Buffer bindings
+-- ===============
+
 M.buffer = {}
 
 M.buffer.insert = function (key, action)
@@ -33,6 +36,27 @@ end
 M.default.insert.tab = function ()
 	-- move_to_end_of_line()
 	-- TODO: Insert another tab.
+end
+
+-- Global bindings
+-- ===============
+
+M.global = {}
+
+M.global.insert = function (key, action)
+	vim.keymap.set("i", key, action)
+end
+
+M.global.normal = function (key, action)
+	vim.keymap.set("n", key, action)
+end
+
+M.global.normal_leader = function (key, action)
+	vim.keymap.set("n", "<leader>" .. key, action)
+end
+
+M.global.visual = function (key, action)
+	vim.keymap.set("v", key, action)
 end
 
 return M
