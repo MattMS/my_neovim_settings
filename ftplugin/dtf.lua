@@ -1,8 +1,7 @@
-local fzf = require "fzf"
-
 -- My modules
 local add = require "add"
 local current = require "current"
+local fzf_pick = require "fzf_pick"
 local keymap = require "keymap"
 local move = require "move"
 
@@ -103,33 +102,19 @@ local function insert_snippet (with_block, default)
 		else
 			-- TODO: If "~/act.ini" does not exist, then show a warning explaining how to create the file.
 			local indent = current.line.indent()
-			coroutine.wrap(function ()
-				local result = fzf.fzf(snippet_keys, "--reverse", {
-					border = true,
-					col = 0,
-					height = 8,
-					relative = "cursor",
-					row = 1,
-					width = 32,
-					window_on_create = function ()
-						-- Sets the background to the same as the normal window.
-						vim.cmd("set winhl=Normal:Normal")
-					end
-				})
-				if result then
-					if with_block then
-						local lines = {'(', ')'}
-						add.lines.below(add.prefix(indent, lines))
-						indent = indent .. '\t'
-						move.down()
-						move.down()
-					end
-					add.lines.above(indent .. snippet_values[result[1]])
-					move.up()
-					move.to.end_of_line()
-					move.left() -- Need to do this or the cursor is beyond the end.
+			fzf_pick.at_cursor_with_lookup(snippet_keys, snippet_values, function (result)
+				if with_block then
+					local lines = {'(', ')'}
+					add.lines.below(add.prefix(indent, lines))
+					indent = indent .. '\t'
+					move.down()
+					move.down()
 				end
-			end)()
+				add.lines.above(indent .. result)
+				move.up()
+				move.to.end_of_line()
+				move.left() -- Need to do this or the cursor is beyond the end.
+			end)
 		end
 	end
 end

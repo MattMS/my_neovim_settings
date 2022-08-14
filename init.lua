@@ -1,4 +1,4 @@
-local fzf = require("fzf")
+local fzf_pick = require("fzf_pick")
 
 -- Given a file path, split into the file path and the file name.
 -- Also fix Windows path separators.
@@ -8,24 +8,16 @@ local function split_path_and_name (path)
 end
 
 local function switch_buffer ()
-	coroutine.wrap(function ()
-		local buffers = {}
-		for i, buffer_number in pairs(vim.api.nvim_list_bufs()) do
-			local path, name = split_path_and_name(vim.api.nvim_buf_get_name(buffer_number))
-			table.insert(buffers, string.format("%d (%s) %s", buffer_number, name, path))
-		end
-		local result = fzf.fzf(buffers, "", {
-			border = true,
-			window_on_create = function ()
-				-- Sets the background to the same as the normal window.
-				vim.cmd("set winhl=Normal:Normal")
-			end
-		})
-		if result then
-			local buffer_number = string.match(result[1], "%d+")
-			vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
-		end
-	end)()
+	-- (vim.api.nvim_list_bufs()):map(function (buffer_number) local path, name = split_path_and_name(vim.api.nvim_buf_get_name(buffer_number)) end)
+	local buffers = {}
+	for i, buffer_number in pairs(vim.api.nvim_list_bufs()) do
+		local path, name = split_path_and_name(vim.api.nvim_buf_get_name(buffer_number))
+		table.insert(buffers, string.format("%d (%s) %s", buffer_number, name, path))
+	end
+	fzf_pick.full(buffers, function (result)
+		local buffer_number = string.match(result, "%d+")
+		vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
+	end)
 end
 
 -- File-type settings
@@ -40,17 +32,16 @@ vim.cmd("autocmd BufNewFile,BufRead *.fsproj set filetype=msbuild")
 
 -- Variables
 -- =========
+--
+-- These are set in Vimscript using `let`, like `let mapleader=" "` and `let g:netrw_banner=0`
 
 -- Use space as the mapleader character.
--- let mapleader=" "
 vim.g.mapleader = " "
 
 -- Hide banner in file browser.
--- let g:netrw_banner=0
 vim.g.netrw_banner = 0
 
 -- Ignore case when sorting files.
--- let g:netrw_sort_options='i'
 vim.g.netrw_sort_options = 'i'
 
 -- Sneak
@@ -73,17 +64,19 @@ vim.cmd("let g:sneak#use_ic_scs=1")
 -- 0 = show on horizontal split.
 -- 1 = show if 2+ windows.
 -- 2 = always show.
-
 vim.opt.laststatus = 0
 
 vim.opt.ignorecase = true
 
 vim.opt.mouse = "a"
 
+-- Hide display of cursor position in file, normally at right edge of the status bar.
+-- This can be seen by pressing Ctrl+G.
 vim.opt.ruler = false
 
 vim.opt.smartcase = true
 
+-- Enable display of current file name in the GUI title area.
 vim.opt.title = true
 
 -- Normal-mode key-mappings
@@ -147,8 +140,8 @@ bind_buf_nav(bind_normal_arrows_hjkl)
 bind_win_nav(bind_normal_shift_arrows_hjkl)
 -- TODO: Ctrl+Arrows to create splits.
 
--- Arrow
--- -----
+-- New-line
+-- --------
 
 -- Add a new line after the current one.
 -- nnoremap <Return> o<ESC>
