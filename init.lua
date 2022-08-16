@@ -2,6 +2,24 @@ local add = require "add"
 local fzf_pick = require("fzf_pick")
 local keymap = require "keymap"
 local move = require "move"
+local Rx = require 'rx'
+
+local function compose (f, g)
+	return function (v)
+		return g(f(v))
+	end
+end
+
+local function equals (v1)
+	return function (v2)
+		return v1 == v2
+	end
+end
+
+local function list_append (list, value)
+	table.insert(list, value)
+	return list
+end
 
 -- Given a file path, split into the file path and the file name.
 -- Also fix Windows path separators.
@@ -10,8 +28,30 @@ local function split_path_and_name (path)
 	return fixed, ""
 end
 
+local function buffer_is_listed (buffer_number)
+	return vim.bo[buffer_number].buflisted
+end
+
+local function switch_buffer_2 ()
+	local buffers = Rx.Observable.fromTable(vim.api.nvim_list_bufs())
+
+	buffers
+	:filter(buffer_is_listed)
+	:map(function (buffer_number)
+		local path, name = split_path_and_name(vim.api.nvim_buf_get_name(buffer_number))
+		return string.format("%d (%s) %s", buffer_number, name, path)
+	end)
+	:reduce(list_append, {})
+	:subscribe(function (buffers)
+		-- print(vim.inspect(buffers))
+		fzf_pick.full(buffers, function (result)
+			local buffer_number = string.match(result, "%d+")
+			vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
+		end)
+	end)
+end
+
 local function switch_buffer ()
-	-- (vim.api.nvim_list_bufs()):map(function (buffer_number) local path, name = split_path_and_name(vim.api.nvim_buf_get_name(buffer_number)) end)
 	local buffers = {}
 	for i, buffer_number in pairs(vim.api.nvim_list_bufs()) do
 		local path, name = split_path_and_name(vim.api.nvim_buf_get_name(buffer_number))
@@ -20,6 +60,18 @@ local function switch_buffer ()
 	fzf_pick.full(buffers, function (result)
 		local buffer_number = string.match(result, "%d+")
 		vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
+	end)
+end
+
+local function switch_file ()
+	fzf_pick.shell("fd --path-separator / --strip-cwd-prefix --type file", function (result)
+		vim.cmd("e " .. result)
+	end)
+end
+
+local function switch_folder ()
+	fzf_pick.shell("fd --path-separator / --strip-cwd-prefix --type directory", function (result)
+		vim.cmd("cd " .. result)
 	end)
 end
 
@@ -185,15 +237,19 @@ keymap.global.normal("<c-q>", cmd("quitall"))
 -- http://www.bestofvim.com/tip/switch-off-current-search/
 keymap.global.normal_leader("/", cmd("nohlsearch"))
 
+keymap.global.normal_leader("c", switch_folder)
+
 -- [Set working directory to the current file](http://vim.wikia.com/wiki/Set_working_directory_to_the_current_file)
-keymap.global.normal_leader("c", cmd("cd %:p:h"))
+keymap.global.normal_leader("<s-c>", cmd("cd %:p:h"))
 
 -- Delete the current buffer.
 -- Same as `:bd`.
 keymap.global.normal_leader("d", cmd("bdelete"))
 
+keymap.global.normal_leader("e", switch_file)
+
 -- View files in folder of current buffer.
-keymap.global.normal_leader("e", cmd("Explore"))
+keymap.global.normal_leader("<s-e>", cmd("Explore"))
 
 -- Toggle relative line numbers in gutter.
 -- Same as `:rnu`.
@@ -210,7 +266,9 @@ keymap.global.normal_leader("n", cmd("bnext"))
 -- Same as `:bp`.
 keymap.global.normal_leader("p", cmd("bprevious"))
 
-keymap.global.normal_leader("s", switch_buffer)
+keymap.global.normal_leader("s", switch_buffer_2)
+
+keymap.global.normal_leader("<s-s>", switch_buffer)
 
 -- Show current local time.
 -- From https://vim.fandom.com/wiki/Insert_current_date_or_time
