@@ -23,9 +23,9 @@ local full_options = {
 }
 
 local function create_picker (args, options)
-	return function (display_items, callback)
+	return function (contents, callback)
 		coroutine.wrap(function ()
-			local result = fzf.fzf(display_items, args, options)
+			local result = fzf.fzf(contents, args, options)
 			if result then
 				callback(result[1])
 			end
@@ -50,5 +50,7 @@ M.full_with_lookup = function (display_items, lookup, callback)
 		callback(lookup[picked])
 	end)
 end
+
+M.shell = create_picker("", full_options)
 
 return M
