@@ -77,7 +77,7 @@ local function expand_line (default)
 end
 
 local function fix_line ()
-	if current.line.matches [[\v^\t+[^ ]+ [^ ]+$]] then
+	if current.line.matches [[\v^\t+[^ ]+ .+$]] then
 		substitute([[^(\t+)([^ ]+) (.*)$]], [[\1\2 (\r\1\t\3\r\1)]])
 		move.up()
 		move.to.end_of_line()
