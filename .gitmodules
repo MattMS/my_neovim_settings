@@ -19,3 +19,6 @@
 [submodule "pack/vijaymarupudi/start/fzf"]
 	path = pack/vijaymarupudi/opt/fzf
 	url = https://github.com/vijaymarupudi/nvim-fzf.git
+[submodule "pack/ionide/opt/Ionide"]
+	path = pack/ionide/opt/Ionide
+	url = https://github.com/ionide/Ionide-vim.git
