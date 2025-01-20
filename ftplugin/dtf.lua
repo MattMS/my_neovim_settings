@@ -1,7 +1,7 @@
 -- My modules
 local add = require "add"
 local current = require "current"
-local fzf_pick = require "fzf_pick"
+-- local fzf_pick = require "fzf_pick"
 local keymap = require "keymap"
 local move = require "move"
 
@@ -102,19 +102,19 @@ local function insert_snippet (with_block, default)
 		else
 			-- TODO: If "~/act.ini" does not exist, then show a warning explaining how to create the file.
 			local indent = current.line.indent()
-			fzf_pick.at_cursor_with_lookup(snippet_keys, snippet_values, function (result)
-				if with_block then
-					local lines = {'(', ')'}
-					add.lines.below(add.prefix(indent, lines))
-					indent = indent .. '\t'
-					move.down()
-					move.down()
-				end
-				add.lines.above(indent .. result)
-				move.up()
-				move.to.end_of_line()
-				move.left() -- Need to do this or the cursor is beyond the end.
-			end)
+			-- fzf_pick.at_cursor_with_lookup(snippet_keys, snippet_values, function (result)
+			-- 	if with_block then
+			-- 		local lines = {'(', ')'}
+			-- 		add.lines.below(add.prefix(indent, lines))
+			-- 		indent = indent .. '\t'
+			-- 		move.down()
+			-- 		move.down()
+			-- 	end
+			-- 	add.lines.above(indent .. result)
+			-- 	move.up()
+			-- 	move.to.end_of_line()
+			-- 	move.left() -- Need to do this or the cursor is beyond the end.
+			-- end)
 		end
 	end
 end

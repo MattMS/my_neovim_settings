@@ -1,5 +1,5 @@
 local add = require "add"
-local fzf_pick = require("fzf_pick")
+-- local fzf_pick = require("fzf_pick")
 local keymap = require "keymap"
 local move = require "move"
 local Rx = require 'rx'
@@ -44,10 +44,10 @@ local function switch_buffer_2 ()
 	:reduce(list_append, {})
 	:subscribe(function (buffers)
 		-- print(vim.inspect(buffers))
-		fzf_pick.full(buffers, function (result)
-			local buffer_number = string.match(result, "%d+")
-			vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
-		end)
+		-- fzf_pick.full(buffers, function (result)
+		-- 	local buffer_number = string.match(result, "%d+")
+		-- 	vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
+		-- end)
 	end)
 end
 
@@ -57,22 +57,22 @@ local function switch_buffer ()
 		local path, name = split_path_and_name(vim.api.nvim_buf_get_name(buffer_number))
 		table.insert(buffers, string.format("%d (%s) %s", buffer_number, name, path))
 	end
-	fzf_pick.full(buffers, function (result)
-		local buffer_number = string.match(result, "%d+")
-		vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
-	end)
+	-- fzf_pick.full(buffers, function (result)
+	-- 	local buffer_number = string.match(result, "%d+")
+	-- 	vim.api.nvim_win_set_buf(0, tonumber(buffer_number))
+	-- end)
 end
 
 local function switch_file ()
-	fzf_pick.shell("fd --path-separator / --strip-cwd-prefix --type file", function (result)
-		vim.cmd("e " .. result)
-	end)
+	-- fzf_pick.shell("fd --path-separator / --strip-cwd-prefix --type file", function (result)
+	-- 	vim.cmd("e " .. result)
+	-- end)
 end
 
 local function switch_folder ()
-	fzf_pick.shell("fd --path-separator / --strip-cwd-prefix --type directory", function (result)
-		vim.cmd("cd " .. result)
-	end)
+	-- fzf_pick.shell("fd --path-separator / --strip-cwd-prefix --type directory", function (result)
+	-- 	vim.cmd("cd " .. result)
+	-- end)
 end
 
 -- File-type settings
